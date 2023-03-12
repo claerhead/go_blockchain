@@ -1,3 +1,3 @@
-module github.com/nomadcoders/nomadcoin
+module github.com/claerhead/go_blockchain
 
 go 1.20
