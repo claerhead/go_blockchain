@@ -1,7 +1,11 @@
 package main
 
-import "github.com/claerhead/go_blockchain/blockchain"
+import (
+	"github.com/claerhead/go_blockchain/cli"
+	"github.com/claerhead/go_blockchain/db"
+)
 
 func main() {
-	blockchain.BlockChain()
+	defer db.Close()
+	cli.Start()
 }
