@@ -82,7 +82,7 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		json.NewEncoder(rw).Encode(blockchain.Blocks(blockchain.BlockChain()))
+		utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Blocks(blockchain.BlockChain())))
 	case "POST":
 		blockchain.BlockChain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)

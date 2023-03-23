@@ -1,11 +1,9 @@
 package main
 
 import (
-	"github.com/claerhead/go_blockchain/cli"
-	"github.com/claerhead/go_blockchain/db"
+	"github.com/claerhead/go_blockchain/wallet"
 )
 
 func main() {
-	defer db.Close()
-	cli.Start()
+	wallet.Start()
 }
