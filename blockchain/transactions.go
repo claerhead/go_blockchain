@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/claerhead/go_blockchain/utils"
+	"github.com/claerhead/go_blockchain/wallet"
 )
 
 const (
@@ -25,20 +26,48 @@ type Tx struct {
 }
 
 type TxIn struct {
-	TxId  string `json:"txId"`
-	Index int    `json:"index"`
-	Owner string `json:"owner"`
+	TxId      string `json:"txId"`
+	Index     int    `json:"index"`
+	Signatrue string `json:"signature"`
 }
 
 type TxOut struct {
-	Owner  string `json:"owner"`
-	Amount int    `json:"amount"`
+	Address string `json:"address"`
+	Amount  int    `json:"amount"`
 }
 
 type UTxOut struct {
 	TxId   string
 	Index  int
 	Amount int
+}
+
+func (t *Tx) getId() {
+	t.Id = utils.Hash(t)
+}
+
+func (t *Tx) sign() {
+	for _, txIn := range t.TxIns {
+		txIn.Signatrue = wallet.Sign(t.Id, *wallet.Wallet())
+	}
+}
+
+func validate(tx *Tx) bool {
+	valid := true
+	b := BlockChain()
+	for _, txIn := range tx.TxIns {
+		prevTx := FindTx(b, txIn.TxId)
+		if prevTx == nil {
+			valid = false
+			break
+		}
+		address := prevTx.TxOuts[txIn.Index].Address
+		valid = wallet.Verify(txIn.Signatrue, tx.Id, address)
+		if !valid {
+			break
+		}
+	}
+	return valid
 }
 
 func isOnMempool(uTxOut *UTxOut) bool {
@@ -53,10 +82,6 @@ Outer:
 		}
 	}
 	return exists
-}
-
-func (t *Tx) getId() {
-	t.Id = utils.Hash(t)
 }
 
 func makeCoinbaseTx(address string) *Tx {
@@ -76,9 +101,12 @@ func makeCoinbaseTx(address string) *Tx {
 	return &tx
 }
 
+var ErrorNotEnoughMoney = errors.New("not enough money")
+var ErrorNotValid = errors.New("Tx invalid")
+
 func makeTx(from, to string, amount int) (*Tx, error) {
 	if BalanceByAddress(from, BlockChain()) < amount {
-		return nil, errors.New("not enough money")
+		return nil, ErrorNotEnoughMoney
 	}
 	var txOuts []*TxOut
 	var txIns []*TxIn
@@ -105,11 +133,16 @@ func makeTx(from, to string, amount int) (*Tx, error) {
 		TxOuts:    txOuts,
 	}
 	tx.getId()
+	tx.sign()
+	valid := validate(tx)
+	if !valid {
+		return nil, ErrorNotValid
+	}
 	return tx, nil
 }
 
 func (m *mempool) AddTx(to string, amount int) error {
-	tx, err := makeTx("jisun", to, amount)
+	tx, err := makeTx(wallet.Wallet().Address, to, amount)
 	if err != nil {
 		return err
 	}
@@ -118,7 +151,7 @@ func (m *mempool) AddTx(to string, amount int) error {
 }
 
 func (m *mempool) TxToContirm() []*Tx {
-	coinbase := makeCoinbaseTx("jisun")
+	coinbase := makeCoinbaseTx(wallet.Wallet().Address)
 	txs := m.Txs
 	txs = append(txs, coinbase)
 	m.Txs = nil
