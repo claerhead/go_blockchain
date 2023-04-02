@@ -48,15 +48,14 @@ func (t *Tx) getId() {
 
 func (t *Tx) sign() {
 	for _, txIn := range t.TxIns {
-		txIn.Signatrue = wallet.Sign(t.Id, *wallet.Wallet())
+		txIn.Signatrue = wallet.Sign(t.Id, wallet.Wallet())
 	}
 }
 
 func validate(tx *Tx) bool {
 	valid := true
-	b := BlockChain()
 	for _, txIn := range tx.TxIns {
-		prevTx := FindTx(b, txIn.TxId)
+		prevTx := FindTx(BlockChain(), txIn.TxId)
 		if prevTx == nil {
 			valid = false
 			break

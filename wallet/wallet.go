@@ -59,7 +59,7 @@ func encodeBigInts(a, b []byte) string {
 	return fmt.Sprintf("%x", z)
 }
 
-func Sign(payload string, w wallet) string {
+func Sign(payload string, w *wallet) string {
 	payloadAsBytes, err := hex.DecodeString(payload)
 	utils.HandleErr(err)
 	r, s, err := ecdsa.Sign(rand.Reader, w.privateKey, payloadAsBytes)
@@ -72,12 +72,11 @@ func restoreBigInts(payload string) (*big.Int, *big.Int, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	utils.HandleErr(err)
 	firstHalfBytes := bytes[:len(bytes)/2]
 	secondHalfBytes := bytes[len(bytes)/2:]
 	bigA, bigB := big.Int{}, big.Int{}
 	bigA.SetBytes(firstHalfBytes)
-	bigA.SetBytes(secondHalfBytes)
+	bigB.SetBytes(secondHalfBytes)
 	return &bigA, &bigB, nil
 }
 

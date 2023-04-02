@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/claerhead/go_blockchain/explorer"
 	"github.com/claerhead/go_blockchain/rest"
@@ -15,7 +14,7 @@ func usage() {
 	fmt.Printf("Please use the following commands:\n\n")
 	fmt.Printf("-port: Set the PORT of the server\n")
 	fmt.Printf("-mode: Choose between 'html' and 'rest'\n\n")
-	runtime.Goexit()
+	os.Exit(0)
 }
 
 func Start() {
